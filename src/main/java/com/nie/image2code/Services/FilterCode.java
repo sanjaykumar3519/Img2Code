@@ -1,7 +1,6 @@
 package com.nie.image2code.Services;
 
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -15,7 +14,8 @@ import java.util.regex.Pattern;
 public class FilterCode {
     //variables in use
     StringBuilder finalCode = new StringBuilder();
-    boolean closeBrace = false;
+    boolean classBraket = false;
+    boolean mainMethodBraket = false;
 
     //apply filter on scanned code to correct small errors
     public String getFilteredCode(String scannedCode) throws IOException {
@@ -39,35 +39,38 @@ public class FilterCode {
         {
             if(temp.toLowerCase().matches("(i?I?mport)(.*)"))
             {
-                log.error("import method invoked");
+                log.error("import method invoked : {}",temp);
                 importBuilder(temp);
             }
             else if(temp.toLowerCase().contains("class"))
             {
-                log.error("class method invoked");
+                log.error("class method invoked : {}",temp);
                 classBuilder(temp);
             }
             else if(temp.matches("(.*)(M?m?ain)(.*)"))
             {
-                log.error("main method invoked");
+                log.error("main method invoked : {}",temp);
                 methodBuilder(temp);
             }
             else if(temp.matches("(s?S?.*)(print)(.*)"))
             {
-                log.error("print method invoked");
+                log.error("print method invoked : {}",temp);
                 printBuilder(temp);
             }
             else if(temp.matches("(.*)(int|float|double|s?S?tring)(.*)"))
             {
-                log.error("variable method invoked");
+                log.error("variable method invoked : {}",temp);
                 variableBuilder(temp);
             }
-            else if(temp.equals("3"))
+            /*else if(temp.equals("3"))
             {
                 closeBrace = true;
-            }
+            }*/
         }
-        finalCode.append("}");
+        if(mainMethodBraket)
+            finalCode.append("}");
+        if(classBraket)
+            finalCode.append("}");
 
         //return filtered code
         return finalCode.toString();
@@ -75,6 +78,8 @@ public class FilterCode {
     //import builder
     public void importBuilder(String s)
     {
+        //make sure the string is small
+
         String importRegex = "(import\\s)([[a-z\\s]*.?]*)";
         Pattern pattern = Pattern.compile(importRegex);
         Matcher matcher = pattern.matcher(s);
@@ -82,57 +87,19 @@ public class FilterCode {
         {
             finalCode.append(matcher.group(0)).append(";");
         }
-
-        /*//enhanced validation
-        StringBuilder result = new StringBuilder();
-        if(s.contains("Import"))
-            s = s.replace("Import","import");
-        String[] sArray = s.split(" ");
-        for(String value:sArray)
-        {
-            if(value.matches("(\\w*)(\\.)(.*)(;?)"))
-            {
-                StringBuilder iValue = new StringBuilder();
-                String[] iArray = value.split("\\.");
-                {
-                    for(int i = 0; i < iArray.length; i++)
-                    {
-                        if(iArray[i].contains(";")||iArray[i].contains(":"))
-                        {
-                            StringBuilder iStarBuilder = new StringBuilder();
-                            String[] iStar = iArray[i].split("");
-                            for(String val:iStar)
-                            {
-                                if(val.equals(";") || val.equals(":"))
-                                    iStarBuilder.append(";");
-                                else if(val.length() == 1)
-                                    iStarBuilder.append("*");
-                                else
-                                    iStarBuilder.append(val);
-                            }
-                            iArray[i] = iStarBuilder.toString();
-                        }
-                        iValue.append(iArray[i]);
-                        if(i < iArray.length-1)
-                            iValue.append(".");
-                    }
-                }
-                value = iValue.toString();
-            }
-            result.append(value).append(" ");
-        }*/
-        //finalCode.append(result);
     }
 
     //class builder
     public void classBuilder(String s)
     {
-        String classRegex = "([public\\s]?)(class\\s)([a-zA-Z]*)";
+        String classRegex = "(public\\s)?(class\\s)([a-zA-Z]*)";
         Pattern pattern = Pattern.compile((classRegex));
         Matcher matcher = pattern.matcher(s);
         while(matcher.find())
         {
+            log.error("class is {}",matcher.group(0));
             finalCode.append(matcher.group(0)).append("{");
+            classBraket = true;
         }
     }
 
@@ -167,6 +134,7 @@ public class FilterCode {
         while(matcher.find())
         {
             finalCode.append(matcher.group(0)).append("{");
+            mainMethodBraket = true;
         }
     }
 
@@ -206,11 +174,6 @@ public class FilterCode {
         while(matcher.find())
         {
             finalCode.append(matcher.group(0)).append(";");
-        }
-        if(closeBrace)
-        {
-            finalCode.append("}");
-            closeBrace = false;
         }
     }
 
