@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.util.StringUtil;
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
-
+import static com.nie.image2code.Misc.Constants.*;
 import static com.nie.image2code.Misc.Constants.*;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.util.Base64;
 @Slf4j
 public class CodeResource {
     ImageToCode imageToCode = new ImageToCode();
-    boolean responseFlag = false;
+    boolean scanFlag = false;
     String encode;
     @PostMapping("/send-code")
     public void processCode(@RequestBody String code) throws IOException {
@@ -28,17 +28,16 @@ public class CodeResource {
         log.error("encoded result {}",encode);
         if(!StringUtil.isEmpty(encode))
         {
-            responseFlag = true;
+            scanFlag = true;
         }
     }
 
     @GetMapping("/scan")
     public String toUser()
     {
-        while(!responseFlag)
-        {
-            log.error("waiting for image to process...");
-        }
-        return encode;
+        if(scanFlag)
+            return encode;
+        else
+            return SCAN_FLAG_RESPONSE;
     }
 }
