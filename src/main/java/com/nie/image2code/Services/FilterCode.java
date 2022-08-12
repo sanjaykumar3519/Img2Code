@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static com.nie.image2code.Misc.Constants.*;
 
 @Slf4j
 public class FilterCode {
@@ -19,6 +20,8 @@ public class FilterCode {
 
     //apply filter on scanned code to correct small errors
     public String getFilteredCode(String scannedCode) throws IOException {
+        //append default package
+        finalCode.append(DEFAULT_PACKAGE);
         //save detected text
         Path path = Paths.get("C:\\Users\\sanja\\Downloads\\output.txt");
         assert scannedCode != null;

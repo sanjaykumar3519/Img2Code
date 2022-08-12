@@ -9,4 +9,5 @@ public class Constants {
     public static final String RESPONSE_BODY = "{\"code\":\"$code\"}";
     public static final String WELCOME = "==========WELCOME TO IMAGE TO CODE CONVERTER=========";
     public static final String SCAN_FLAG_RESPONSE = "Please scan image first";
+    public static final String DEFAULT_PACKAGE = "package Img2Code;";
 }
